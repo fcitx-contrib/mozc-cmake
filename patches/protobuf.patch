@@ -1,0 +1,55 @@
+diff --git a/src/google/protobuf/compiler/BUILD.bazel b/src/google/protobuf/compiler/BUILD.bazel
+index 02729619f..2d577737c 100644
+--- a/src/google/protobuf/compiler/BUILD.bazel
++++ b/src/google/protobuf/compiler/BUILD.bazel
+@@ -193,14 +193,6 @@ cc_library(
+         "//src/google/protobuf",
+         "//src/google/protobuf:port",
+         "//src/google/protobuf/compiler/cpp",
+-        "//src/google/protobuf/compiler/csharp",
+-        "//src/google/protobuf/compiler/java",
+-        "//src/google/protobuf/compiler/java:kotlin",
+-        "//src/google/protobuf/compiler/objectivec",
+-        "//src/google/protobuf/compiler/php",
+-        "//src/google/protobuf/compiler/python",
+-        "//src/google/protobuf/compiler/ruby",
+-        "//src/google/protobuf/compiler/rust",
+         "@com_google_absl//absl/log:initialize",
+     ],
+ )
+diff --git a/src/google/protobuf/compiler/main.cc b/src/google/protobuf/compiler/main.cc
+index a5c7537f4..80415c7cf 100644
+--- a/src/google/protobuf/compiler/main.cc
++++ b/src/google/protobuf/compiler/main.cc
+@@ -8,6 +8,7 @@
+ #include "absl/log/initialize.h"
+ #include "google/protobuf/compiler/command_line_interface.h"
+ #include "google/protobuf/compiler/cpp/generator.h"
++#if 0
+ #include "google/protobuf/compiler/csharp/csharp_generator.h"
+ #include "google/protobuf/compiler/java/generator.h"
+ #include "google/protobuf/compiler/java/kotlin_generator.h"
+@@ -17,6 +18,7 @@
+ #include "google/protobuf/compiler/python/pyi_generator.h"
+ #include "google/protobuf/compiler/ruby/ruby_generator.h"
+ #include "google/protobuf/compiler/rust/generator.h"
++#endif
+ 
+ #ifdef DISABLE_PROTOC_CONFIG
+ #include "google/protobuf/compiler/allowlists/allowlist.h"
+@@ -53,6 +55,7 @@ int ProtobufMain(int argc, char* argv[]) {
+   cpp_generator.set_runtime_include_base(GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE);
+ #endif
+ 
++#if 0
+   // Proto2 Java
+   java::JavaGenerator java_generator;
+   cli.RegisterGenerator("--java_out", "--java_opt", &java_generator,
+@@ -106,6 +109,7 @@ int ProtobufMain(int argc, char* argv[]) {
+   rust::RustGenerator rust_generator;
+   cli.RegisterGenerator("--rust_out", "--rust_opt", &rust_generator,
+                         "Generate Rust sources.");
++#endif
+ #ifdef DISABLE_PROTOC_CONFIG
+   auto cleanup = internal::DisableAllowlistInternalOnly();
+ #endif  // DISABLE_PROTOC_CONFIG

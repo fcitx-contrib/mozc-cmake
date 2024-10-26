@@ -44,3 +44,102 @@ jobs:
       - name: Setup tmate session
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
+
+  macos:
+    needs: linux
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-13]
+        include:
+          - { os: macos-15, arch: arm64 }
+          - { os: macos-13, arch: x86_64 }
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: src/build/data_manager/oss
+
+      - name: Install dependencies
+        run: |
+          brew install \
+            ninja
+
+      - name: Download and install Fcitx5.app
+        run: |
+          wget https://github.com/fcitx-contrib/fcitx5-macos/releases/download/latest/Fcitx5-${{ matrix.arch }}.tar.bz2
+          sudo tar xjvf Fcitx5-${{ matrix.arch }}.tar.bz2 -C "/Library/Input Methods"
+
+      - name: Patch protobuf
+        run: cd src && ./remove_protobuf_compilers.sh
+
+      - name: Build
+        run: |
+          git apply patches/cmake.patch
+          cd src
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_FIND_ROOT_PATH="/Library/Input Methods/Fcitx5.app/Contents" \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=13
+          cmake --build build
+          mv build/unix/fcitx5/libmozc.so ../libmozc-${{ matrix.arch }}.so
+          mv build/server/mozc_server ../mozc_server-${{ matrix.arch }}
+
+      - name: Upload libmozc-${{ matrix.arch }}.so
+        uses: actions/upload-artifact@v4
+        with:
+          name: libmozc-${{ matrix.arch }}.so
+          path: |
+            libmozc-${{ matrix.arch }}.so
+
+      - name: Upload mozc_server-${{ matrix.arch }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: mozc_server-${{ matrix.arch }}
+          path: |
+            mozc_server-${{ matrix.arch }}
+
+      - name: Upload conf
+        if: ${{ matrix.os == 'macos-15' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: conf
+          path: |
+            src/unix/fcitx5/mozc-addon.conf
+            src/unix/fcitx5/mozc.conf
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+
+  release:
+    needs: macos
+    if: ${{ github.ref == 'refs/heads/cmake' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Release
+        uses: 'marvinpinto/action-automatic-releases@latest'
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: latest
+          prerelease: true
+          title: "Nightly Build"
+          files: |
+            libmozc-arm64.so
+            libmozc-x86_64.so
+            mozc_server-arm64
+            mozc_server-x86_64
+            mozc-addon.conf
+            mozc.conf

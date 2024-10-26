@@ -1,0 +1,221 @@
+diff --git a/src/base/const.h b/src/base/const.h
+index 1217cc6..573fbec 100644
+--- a/src/base/const.h
++++ b/src/base/const.h
+@@ -126,7 +126,7 @@ inline constexpr wchar_t kMozcRegKey[] = L"Software\\Mozc Project\\Mozc";
+ inline constexpr wchar_t kElevatedProcessDisabledKey[] =
+     L"Software\\Policies\\Mozc Project\\Mozc\\Preferences";
+ #endif  // GOOGLE_JAPANESE_INPUT_BUILD
+-#elif defined(__APPLE__)
++#elif 0 && defined(__APPLE__)
+ inline constexpr char kMozcServerName[] = kProductPrefix "Converter.app";
+ inline constexpr char kMozcRenderer[] = kProductPrefix "Renderer.app";
+ inline constexpr char kMozcTool[] = kProductPrefix "Tool.app";
+diff --git a/src/base/mac/mac_util.mm b/src/base/mac/mac_util.mm
+index f026210..268124c 100644
+--- a/src/base/mac/mac_util.mm
++++ b/src/base/mac/mac_util.mm
+@@ -32,6 +32,7 @@
+ #import <Foundation/Foundation.h>
+ #include <TargetConditionals.h>
+ 
++#include <filesystem>
+ #include <string>
+ 
+ #include "absl/log/check.h"
+@@ -53,6 +54,7 @@
+ #endif  // TARGET_OS_IPHONE
+ 
+ namespace mozc {
++#if 0
+ namespace {
+ const char kServerDirectory[] = "/Library/Input Methods/" kProductPrefix ".app/Contents/Resources";
+ #if TARGET_OS_OSX
+@@ -145,6 +147,7 @@ std::string MacUtil::GetApplicationSupportDirectory() {
+ std::string MacUtil::GetCachesDirectory() {
+   return GetSearchPathForDirectoriesInDomains(NSCachesDirectory);
+ }
++#endif
+ 
+ std::string MacUtil::GetLoggingDirectory() {
+   std::string dir;
+@@ -167,8 +170,12 @@ std::string MacUtil::GetOSVersionString() {
+   return version;
+ }
+ 
+-std::string MacUtil::GetServerDirectory() { return kServerDirectory; }
++std::string MacUtil::GetServerDirectory() {
++  std::filesystem::path home{getenv("HOME")};
++  return home/"Library/fcitx5/lib/mozc";
++}
+ 
++#if 0
+ std::string MacUtil::GetResourcesDirectory() {
+   std::string result;
+   @autoreleasepool {
+@@ -182,6 +189,7 @@ std::string MacUtil::GetResourcesDirectory() {
+   }
+   return result;
+ }
++#endif
+ 
+ #if TARGET_OS_IPHONE
+ std::string MacUtil::GetSerialNumber() {
+@@ -215,6 +223,7 @@ std::string MacUtil::GetSerialNumber() {
+   return result;
+ }
+ 
++#if 0
+ bool MacUtil::StartLaunchdService(const std::string &service_name, pid_t *pid) {
+   int dummy_pid = 0;
+   if (pid == nullptr) {
+@@ -352,5 +361,6 @@ bool MacUtil::IsSuppressSuggestionWindow(const std::string &name, const std::str
+           absl::EndsWith(name, " - Google Search"));
+ }
+ #endif  // TARGET_OS_IPHONE
++#endif
+ 
+ }  // namespace mozc
+diff --git a/src/base/system_util.cc b/src/base/system_util.cc
+index ec1b70e..e098e7f 100644
+--- a/src/base/system_util.cc
++++ b/src/base/system_util.cc
+@@ -268,6 +268,7 @@ std::string UserProfileDirectoryImpl::GetUserProfileDirectory() const {
+   return FileUtil::JoinPath(dir, kProductNameInEnglish);
+ 
+ #elif defined(TARGET_OS_OSX) && TARGET_OS_OSX
++#if 0
+   std::string dir = MacUtil::GetApplicationSupportDirectory();
+ #ifdef GOOGLE_JAPANESE_INPUT_BUILD
+   dir = FileUtil::JoinPath(dir, "Google");
+@@ -278,6 +279,9 @@ std::string UserProfileDirectoryImpl::GetUserProfileDirectory() const {
+ #else   //  GOOGLE_JAPANESE_INPUT_BUILD
+   return FileUtil::JoinPath(dir, "Mozc");
+ #endif  //  GOOGLE_JAPANESE_INPUT_BUILD
++#endif
++  const std::string home = Environ::GetEnv("HOME");
++  return FileUtil::JoinPath(home, ".config/mozc");
+ 
+ #elif defined(__linux__)
+   // 1. If "$HOME/.mozc" already exists,
+diff --git a/src/base/vlog.cc b/src/base/vlog.cc
+index 7d9a78e..6791fc5 100644
+--- a/src/base/vlog.cc
++++ b/src/base/vlog.cc
+@@ -39,7 +39,7 @@
+ 
+ // Abseil defines --v flag. We rely on it to avoid symbol name collision (though
+ // not recommended).
+-ABSL_DECLARE_FLAG(int, v);
++ABSL_FLAG(int, v, 100, "");
+ 
+ namespace mozc::internal {
+ 
+diff --git a/src/client/server_launcher.cc b/src/client/server_launcher.cc
+index c4fac76..811a3f3 100644
+--- a/src/client/server_launcher.cc
++++ b/src/client/server_launcher.cc
+@@ -169,7 +169,7 @@ bool ServerLauncher::StartServer(ClientInterface *client) {
+     LOG(ERROR) << "Can't start process: " << ::GetLastError();
+     return false;
+   }
+-#elif defined(__APPLE__)  // _WIN32
++#elif 0 && defined(__APPLE__)  // _WIN32
+   // Use launchd API instead of spawning process.  It doesn't use
+   // server_program() at all.
+   const bool result = MacUtil::StartLaunchdService(
+diff --git a/src/ipc/ipc.h b/src/ipc/ipc.h
+index 9ee03b8..472f367 100644
+--- a/src/ipc/ipc.h
++++ b/src/ipc/ipc.h
+@@ -152,7 +152,7 @@ class IPCClient : public IPCClientInterface {
+   // Do not use it unless version mismatch happens
+   static bool TerminateServer(absl::string_view name);
+ 
+-#ifdef __APPLE__
++#if 0
+   void SetMachPortManager(MachPortManagerInterface *manager) {
+     mach_port_manager_ = manager;
+   }
+@@ -165,7 +165,7 @@ class IPCClient : public IPCClientInterface {
+   // Windows
+   wil::unique_hfile pipe_handle_;
+   wil::unique_event_nothrow pipe_event_;
+-#elif defined(__APPLE__)
++#elif 0 && defined(__APPLE__)
+   std::string name_;
+   MachPortManagerInterface *mach_port_manager_;
+ #else   // _WIN32
+@@ -253,7 +253,7 @@ class IPCServer {
+   // call TerminateThread()
+   void Terminate();
+ 
+-#ifdef __APPLE__
++#if 0
+   void SetMachPortManager(MachPortManagerInterface *manager) {
+     mach_port_manager_ = manager;
+   }
+@@ -271,7 +271,7 @@ class IPCServer {
+ #ifdef _WIN32
+   wil::unique_hfile pipe_handle_;
+   wil::unique_event_nothrow pipe_event_;
+-#elif defined(__APPLE__)
++#elif 0 && defined(__APPLE__)
+   std::string name_;
+   MachPortManagerInterface *mach_port_manager_;
+ #else   // _WIN32
+diff --git a/src/ipc/ipc_path_manager.cc b/src/ipc/ipc_path_manager.cc
+index 3edbde0..7c15f1f 100644
+--- a/src/ipc/ipc_path_manager.cc
++++ b/src/ipc/ipc_path_manager.cc
+@@ -275,7 +275,7 @@ bool IPCPathManager::GetPathName(std::string *ipc_name) const {
+ 
+ #ifdef _WIN32
+   *ipc_name = mozc::kIPCPrefix;
+-#elif defined(__APPLE__)
++#elif 0 && defined(__APPLE__)
+   ipc_name->assign(MacUtil::GetLabelForSuffix(""));
+ #else   // not _WIN32 nor __APPLE__
+   // GetUserIPCName("<name>") => "/tmp/.mozc.<key>.<name>"
+diff --git a/src/ipc/unix_ipc.cc b/src/ipc/unix_ipc.cc
+index 0d9a73d..6e6a2b2 100644
+--- a/src/ipc/unix_ipc.cc
++++ b/src/ipc/unix_ipc.cc
+@@ -28,7 +28,7 @@
+ // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+ // __linux__ only. Note that __ANDROID__/__wasm__ don't reach here.
+-#if defined(__linux__)
++#if 1 or defined(__linux__)
+ 
+ #include <fcntl.h>
+ #include <sys/select.h>
+@@ -121,6 +121,7 @@ bool IsWriteTimeout(int socket, absl::Duration timeout) {
+ bool IsPeerValid(int socket, pid_t *pid) {
+   *pid = 0;
+ 
++#if 0
+   struct ucred peer_cred;
+   int peer_cred_len = sizeof(peer_cred);
+   if (getsockopt(socket, SOL_SOCKET, SO_PEERCRED, &peer_cred,
+@@ -135,6 +136,7 @@ bool IsPeerValid(int socket, pid_t *pid) {
+   }
+ 
+   *pid = peer_cred.pid;
++#endif
+ 
+   return true;
+ }
+diff --git a/src/unix/fcitx5/mozc-addon.conf b/src/unix/fcitx5/mozc-addon.conf
+index 88fbc11..ae72046 100644
+--- a/src/unix/fcitx5/mozc-addon.conf
++++ b/src/unix/fcitx5/mozc-addon.conf
+@@ -1,7 +1,7 @@
+ [Addon]
+ Name=Mozc
+ Category=InputMethod
+-Library=fcitx5-mozc
++Library=libmozc
+ Type=SharedLibrary
+ OnDemand=True
+ Configurable=True

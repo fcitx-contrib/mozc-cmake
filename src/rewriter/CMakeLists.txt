@@ -1,0 +1,50 @@
+add_library(mozc_rewriter
+    user_segment_history_rewriter.cc
+    rewriter_util.cc
+    zipcode_rewriter.cc
+    number_rewriter.cc
+    gen_existence_data.cc
+    dictionary_generator.cc
+    emoji_rewriter.cc
+    version_rewriter.cc
+    calculator/calculator.cc
+    calculator/calculator_mock.cc
+    english_variants_rewriter.cc
+    calculator_rewriter.cc
+    ivs_variants_rewriter.cc
+    collocation_util.cc
+    a11y_description_rewriter.cc
+    command_rewriter.cc
+    t13n_promotion_rewriter.cc
+    correction_rewriter.cc
+    emoticon_rewriter.cc
+    single_kanji_rewriter.cc
+    fortune_rewriter.cc
+    usage_rewriter.cc
+    user_boundary_history_rewriter.cc
+    gen_emoticon_rewriter_data.cc
+    transliteration_rewriter.cc
+    number_compound_util.cc
+    small_letter_rewriter.cc
+    gen_single_kanji_noun_prefix_data.cc
+    language_aware_rewriter.cc
+    dice_rewriter.cc
+    focus_candidate_rewriter.cc
+    user_dictionary_rewriter.cc
+    unicode_rewriter.cc
+    collocation_rewriter.cc
+    variants_rewriter.cc
+    date_rewriter.cc
+    rewriter.cc
+    environmental_filter_rewriter.cc
+    order_rewriter.cc
+    remove_redundant_candidate_rewriter.cc
+    symbol_rewriter.cc
+)
+
+target_include_directories(mozc_rewriter PRIVATE
+    "${PROJECT_SOURCE_DIR}"
+    "${PROJECT_SOURCE_DIR}/third_party/abseil-cpp"
+    "${PROJECT_SOURCE_DIR}/third_party/protobuf/src"
+    "${PROJECT_BINARY_DIR}"
+)

@@ -1,5 +1,5 @@
 diff --git a/src/base/const.h b/src/base/const.h
-index 1217cc6..573fbec 100644
+index 1217cc6ea..573fbec45 100644
 --- a/src/base/const.h
 +++ b/src/base/const.h
 @@ -126,7 +126,7 @@ inline constexpr wchar_t kMozcRegKey[] = L"Software\\Mozc Project\\Mozc";
@@ -12,7 +12,7 @@ index 1217cc6..573fbec 100644
  inline constexpr char kMozcRenderer[] = kProductPrefix "Renderer.app";
  inline constexpr char kMozcTool[] = kProductPrefix "Tool.app";
 diff --git a/src/base/mac/mac_util.mm b/src/base/mac/mac_util.mm
-index f026210..268124c 100644
+index f02621056..268124ca6 100644
 --- a/src/base/mac/mac_util.mm
 +++ b/src/base/mac/mac_util.mm
 @@ -32,6 +32,7 @@
@@ -77,7 +77,7 @@ index f026210..268124c 100644
  
  }  // namespace mozc
 diff --git a/src/base/system_util.cc b/src/base/system_util.cc
-index ec1b70e..e098e7f 100644
+index ec1b70e0f..e098e7f85 100644
 --- a/src/base/system_util.cc
 +++ b/src/base/system_util.cc
 @@ -268,6 +268,7 @@ std::string UserProfileDirectoryImpl::GetUserProfileDirectory() const {
@@ -99,7 +99,7 @@ index ec1b70e..e098e7f 100644
  #elif defined(__linux__)
    // 1. If "$HOME/.mozc" already exists,
 diff --git a/src/base/vlog.cc b/src/base/vlog.cc
-index 7d9a78e..6791fc5 100644
+index 7d9a78e68..6791fc54f 100644
 --- a/src/base/vlog.cc
 +++ b/src/base/vlog.cc
 @@ -39,7 +39,7 @@
@@ -112,7 +112,7 @@ index 7d9a78e..6791fc5 100644
  namespace mozc::internal {
  
 diff --git a/src/client/server_launcher.cc b/src/client/server_launcher.cc
-index c4fac76..811a3f3 100644
+index c4fac761b..811a3f328 100644
 --- a/src/client/server_launcher.cc
 +++ b/src/client/server_launcher.cc
 @@ -169,7 +169,7 @@ bool ServerLauncher::StartServer(ClientInterface *client) {
@@ -125,7 +125,7 @@ index c4fac76..811a3f3 100644
    // server_program() at all.
    const bool result = MacUtil::StartLaunchdService(
 diff --git a/src/ipc/ipc.h b/src/ipc/ipc.h
-index 9ee03b8..472f367 100644
+index 9ee03b8ac..472f36752 100644
 --- a/src/ipc/ipc.h
 +++ b/src/ipc/ipc.h
 @@ -152,7 +152,7 @@ class IPCClient : public IPCClientInterface {
@@ -165,7 +165,7 @@ index 9ee03b8..472f367 100644
    MachPortManagerInterface *mach_port_manager_;
  #else   // _WIN32
 diff --git a/src/ipc/ipc_path_manager.cc b/src/ipc/ipc_path_manager.cc
-index 3edbde0..7c15f1f 100644
+index 3edbde009..7c15f1f25 100644
 --- a/src/ipc/ipc_path_manager.cc
 +++ b/src/ipc/ipc_path_manager.cc
 @@ -275,7 +275,7 @@ bool IPCPathManager::GetPathName(std::string *ipc_name) const {
@@ -178,7 +178,7 @@ index 3edbde0..7c15f1f 100644
  #else   // not _WIN32 nor __APPLE__
    // GetUserIPCName("<name>") => "/tmp/.mozc.<key>.<name>"
 diff --git a/src/ipc/unix_ipc.cc b/src/ipc/unix_ipc.cc
-index 0d9a73d..6e6a2b2 100644
+index 0d9a73d44..6e6a2b232 100644
 --- a/src/ipc/unix_ipc.cc
 +++ b/src/ipc/unix_ipc.cc
 @@ -28,7 +28,7 @@
@@ -207,7 +207,7 @@ index 0d9a73d..6e6a2b2 100644
    return true;
  }
 diff --git a/src/unix/fcitx5/mozc-addon.conf b/src/unix/fcitx5/mozc-addon.conf
-index 88fbc11..ae72046 100644
+index 88fbc11b3..ae7204648 100644
 --- a/src/unix/fcitx5/mozc-addon.conf
 +++ b/src/unix/fcitx5/mozc-addon.conf
 @@ -1,7 +1,7 @@
@@ -219,3 +219,18 @@ index 88fbc11..ae72046 100644
  Type=SharedLibrary
  OnDemand=True
  Configurable=True
+diff --git a/src/unix/fcitx5/mozc_engine.cc b/src/unix/fcitx5/mozc_engine.cc
+index dfb7ecec7..67740ff55 100644
+--- a/src/unix/fcitx5/mozc_engine.cc
++++ b/src/unix/fcitx5/mozc_engine.cc
+@@ -228,7 +228,9 @@ MozcEngine::MozcEngine(Instance *instance)
+   reloadConfig();
+ }
+ 
+-MozcEngine::~MozcEngine() {}
++MozcEngine::~MozcEngine() {
++  client_->Shutdown();
++}
+ 
+ void MozcEngine::setConfig(const RawConfig &config) {
+   config_.load(config, true);
